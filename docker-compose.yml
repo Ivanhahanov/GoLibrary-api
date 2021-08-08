@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+    environment:
+      - MONGODB_USERNAME=$MONGODB_USERNAME
+      - MONGODB_PASSWORD=$MONGODB_PASSWORD
+      - MONGODB_ENDPOINT=$MONGODB_ENDPOINT
+    ports:
+      - 80:8080
+  mongodb:
+    container_name: mongobd
+    # database for store info of documents
+    image: mongo
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - MONGO_INITDB_ROOT_USERNAME=$MONGODB_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGODB_PASSWORD
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+#  elstic:
+#    container_name: elastic
+
+
+volumes:
+  mongo-data:
