@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Ivanhahanov/GoLibrary/config"
 	"github.com/Ivanhahanov/GoLibrary/models"
 	"log"
 	"os"
@@ -21,6 +22,20 @@ const (
 	connectTimeout           = 5
 	connectionStringTemplate = "mongodb://%s:%s@%s"
 )
+
+type MongoCredentials struct {
+	Username string
+	Password string
+	Enrypoint string
+}
+
+var mongoCfg MongoCredentials
+
+func InitConnection(cfg *config.Config){
+	mongoCfg.Enrypoint = cfg.Database.Address
+	mongoCfg.Username = cfg.Database.Username
+	mongoCfg.Password = cfg.Database.Password
+}
 
 // GetConnection Retrieves a client to the MongoDB
 func getConnection() (*mongo.Client, context.Context, context.CancelFunc) {

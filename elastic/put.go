@@ -43,6 +43,9 @@ func Put(filepath string) {
 		Pipeline: "attachment",
 	}
 	res, err := req.Do(context.Background(), es)
+	if err != nil{
+		log.Println(err)
+	}
 	defer res.Body.Close()
 	fmt.Println(res)
 }
