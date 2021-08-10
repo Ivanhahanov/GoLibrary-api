@@ -1,5 +1,5 @@
 database:
-  address: mongodb:2701
+  address: mongodb:27017
   username: root
   password: changeme
 

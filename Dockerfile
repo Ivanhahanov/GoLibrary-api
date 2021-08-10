@@ -8,5 +8,6 @@ FROM alpine
 RUN apk add poppler-utils
 ENV MONGODB_USERNAME=MONGODB_USERNAME MONGODB_PASSWORD=MONGODB_PASSWORD MONGODB_ENDPOINT=MONGODB_ENDPOINT
 COPY --from=builder /main ./
+COPY --from=builder /app/config.yml ./
 ENTRYPOINT ["./main"]
 EXPOSE 8080
