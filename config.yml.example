@@ -4,6 +4,6 @@ database:
   password: changeme
 
 elastic:
-  address: https://192.168.1.64:9200
+  address: https://odfe-node1:9200
   username: admin
   password: admin
