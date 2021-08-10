@@ -152,3 +152,22 @@ func Update(task *models.Book) (*models.Book, error) {
 	}
 	return updatedBook, nil
 }
+
+func OneDelete(book *models.Book)  (primitive.ObjectID, error){
+	client, ctx, cancel := getConnection()
+	defer cancel()
+	defer client.Disconnect(ctx)
+
+	result, err := client.Database("books").Collection("books").DeleteOne(ctx, bson.M{"_id": book.ID})
+	if err != nil{
+		log.Printf("Could not delete Book: %v", err)
+	}
+	if result.DeletedCount == 0 {
+		log.Println("DeleteOne() document not found:", result)
+	} else {
+		// Print the results of the DeleteOne() method
+		log.Println("DeleteOne Result:", result)
+	}
+	return book.ID, nil
+}
+

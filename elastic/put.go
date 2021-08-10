@@ -12,13 +12,11 @@ import (
 )
 
 type Book struct {
-	Title  string   `json:"title"`
-	Author string   `json:"author"`
-	Tags   []string `json:"tags"`
-	Data   string   `json:"data"`
+	MongoId string `json:"mongo_id"`
+	Data    string `json:"data"`
 }
 
-func Put(filepath string) {
+func Put(filepath string, mongoId string) {
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -31,10 +29,8 @@ func Put(filepath string) {
 	str := base64.StdEncoding.EncodeToString([]byte(content.Body))
 
 	book := Book{
-		Title:  "test",
-		Author: "test",
-		Tags:   []string{"test", "AD"},
-		Data:   str,
+		MongoId: mongoId,
+		Data:    str,
 	}
 
 	req := esapi.IndexRequest{
@@ -49,3 +45,4 @@ func Put(filepath string) {
 	defer res.Body.Close()
 	fmt.Println(res)
 }
+

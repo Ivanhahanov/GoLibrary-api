@@ -18,5 +18,6 @@ func main() {
 	r.GET("/books/", routes.HandleGetBooks)
 	r.PUT("/books/", routes.HandleUploadBook)
 	r.POST("/books/", routes.HandleUpdateBook)
+	r.DELETE("/books/:id", routes.HandleDeleteBook)
 	r.Run()
 }

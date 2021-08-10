@@ -79,7 +79,7 @@ func HandleUploadBook(c *gin.Context) {
 		return
 	}
 
-	elastic.Put(newFilePath)
+	elastic.Put(newFilePath, book.ID.String())
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Your file has been successfully uploaded.",
@@ -100,4 +100,20 @@ func HandleUpdateBook(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"book": savedBook})
+}
+
+func HandleDeleteBook(c *gin.Context)  {
+	var book models.Book
+	if err := c.ShouldBindJSON(&book); err != nil {
+		log.Print(err)
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
+		return
+	}
+	deletedBook, err := database.OneDelete(&book)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err})
+		return
+	}
+	elastic.Delete(book.ID.String())
+	c.JSON(http.StatusOK, gin.H{"book": deletedBook})
 }

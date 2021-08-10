@@ -1,9 +1,9 @@
 database:
-  address: mongodb:2701
+  address: 192.168.1.64:27017
   username: root
   password: changeme
 
 elastic:
-  address: https://odfe-node1:9200
+  address: https://192.168.1.64:9200
   username: admin
   password: admin
