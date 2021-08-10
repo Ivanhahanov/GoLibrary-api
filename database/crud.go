@@ -153,12 +153,13 @@ func Update(task *models.Book) (*models.Book, error) {
 	return updatedBook, nil
 }
 
-func OneDelete(book *models.Book)  (primitive.ObjectID, error){
+func OneDelete(bookId string)  (string, error){
 	client, ctx, cancel := getConnection()
 	defer cancel()
 	defer client.Disconnect(ctx)
-
-	result, err := client.Database("books").Collection("books").DeleteOne(ctx, bson.M{"_id": book.ID})
+	objectId, _ := primitive.ObjectIDFromHex(bookId)
+	fmt.Println(objectId)
+	result, err := client.Database("books").Collection("books").DeleteOne(ctx, bson.M{"_id": objectId})
 	if err != nil{
 		log.Printf("Could not delete Book: %v", err)
 	}
@@ -168,6 +169,6 @@ func OneDelete(book *models.Book)  (primitive.ObjectID, error){
 		// Print the results of the DeleteOne() method
 		log.Println("DeleteOne Result:", result)
 	}
-	return book.ID, nil
+	return bookId, nil
 }
 

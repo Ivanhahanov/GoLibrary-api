@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"github.com/Ivanhahanov/GoLibrary/database"
 	"github.com/Ivanhahanov/GoLibrary/elastic"
 	"github.com/Ivanhahanov/GoLibrary/models"
@@ -79,7 +80,7 @@ func HandleUploadBook(c *gin.Context) {
 		return
 	}
 
-	elastic.Put(newFilePath, book.ID.String())
+	elastic.Put(newFilePath, book.ID.Hex())
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Your file has been successfully uploaded.",
@@ -103,17 +104,13 @@ func HandleUpdateBook(c *gin.Context) {
 }
 
 func HandleDeleteBook(c *gin.Context)  {
-	var book models.Book
-	if err := c.ShouldBindJSON(&book); err != nil {
-		log.Print(err)
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
-		return
-	}
-	deletedBook, err := database.OneDelete(&book)
+	bookId := c.Param("id")
+	fmt.Println(bookId)
+	_, err := database.OneDelete(bookId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": err})
 		return
 	}
-	elastic.Delete(book.ID.String())
-	c.JSON(http.StatusOK, gin.H{"book": deletedBook})
+	elastic.Delete(bookId)
+	c.JSON(http.StatusOK, gin.H{"book": bookId})
 }

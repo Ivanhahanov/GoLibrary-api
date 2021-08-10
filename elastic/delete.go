@@ -1,11 +1,12 @@
 package elastic
 
 import (
-	"context"
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/elastic/go-elasticsearch/v8"
-	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"log"
+	"strings"
 )
 
 func Delete(mongoId string) {
@@ -13,14 +14,20 @@ func Delete(mongoId string) {
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
 	}
-
-	req := esapi.DeleteRequest{Index: "books_ru", DocumentID: mongoId}
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"match": map[string]interface{}{
+				"mongo_id": mongoId,
+			},
+		},
+	}
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(query); err != nil {
+		log.Fatalf("Error encoding query: %s", err)
+	}
+	res, err := es.DeleteByQuery([]string{"books_ru"}, strings.NewReader(buf.String()))
 	if err != nil {
 		log.Fatalf("Error deleting the document: %s", err)
-	}
-	res, err := req.Do(context.Background(), es)
-	if err != nil{
-		log.Println(err)
 	}
 	defer res.Body.Close()
 	fmt.Println(res)
