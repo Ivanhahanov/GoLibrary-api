@@ -7,7 +7,6 @@ import (
 	"github.com/Ivanhahanov/GoLibrary/config"
 	"github.com/Ivanhahanov/GoLibrary/models"
 	"log"
-	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -39,9 +38,9 @@ func InitConnection(cfg *config.Config){
 
 // GetConnection Retrieves a client to the MongoDB
 func getConnection() (*mongo.Client, context.Context, context.CancelFunc) {
-	username := os.Getenv("MONGODB_USERNAME")
-	password := os.Getenv("MONGODB_PASSWORD")
-	clusterEndpoint := os.Getenv("MONGODB_ENDPOINT")
+	username := mongoCfg.Username
+	password := mongoCfg.Password
+	clusterEndpoint := mongoCfg.Enrypoint
 
 	connectionURI := fmt.Sprintf(connectionStringTemplate, username, password, clusterEndpoint)
 
