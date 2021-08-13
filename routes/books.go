@@ -55,6 +55,8 @@ func HandleUploadBook(c *gin.Context) {
 	}
 	title := c.Request.PostFormValue("title")
 	author := c.Request.PostFormValue("author")
+	publisher := c.Request.PostFormValue("publisher")
+	description := c.Request.PostFormValue("description")
 
 	// Retrieve file information
 	extension := filepath.Ext(file.Filename)
@@ -74,6 +76,8 @@ func HandleUploadBook(c *gin.Context) {
 	book.Author = author
 	book.Title = title
 	book.Path = newFilePath
+	book.Publisher = publisher
+	book.Description = description
 	_, err = database.Create(&book)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": book.Tags})
