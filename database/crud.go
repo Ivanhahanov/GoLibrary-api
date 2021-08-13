@@ -97,7 +97,7 @@ func GetBookByID(id primitive.ObjectID) (*models.Book, error) {
 	defer client.Disconnect(ctx)
 	db := client.Database("books")
 	collection := db.Collection("books")
-	result := collection.FindOne(ctx, bson.D{})
+	result := collection.FindOne(ctx, bson.M{"_id": id})
 	if result == nil {
 		return nil, errors.New("Could not find a Book")
 	}

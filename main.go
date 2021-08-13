@@ -34,5 +34,6 @@ func main() {
 	r.DELETE("/books/:id", routes.HandleDeleteBook)
 
 	r.GET("/search/", routes.HandleSearch)
+	r.GET("/content/search/", routes.HandleSearchContent)
 	r.Run()
 }
