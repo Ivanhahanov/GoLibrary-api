@@ -14,6 +14,8 @@ func main() {
 	var cfg config.Config
 	cfg.LoadConfig("config.yml")
 	elastic.InitConnection(&cfg)
+	elastic.PipelineInit()
+	elastic.IndexInit()
 	database.InitConnection(&cfg)
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
