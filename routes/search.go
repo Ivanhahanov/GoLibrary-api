@@ -41,9 +41,10 @@ func HandleSearch(c *gin.Context) {
 }
 
 type ContentSearch struct {
-	Query    string `form:"q"`
-	Size     int    `form:"size"`
-	Language string `form:"lang"`
+	Query             string `form:"q"`
+	NumberOfFragments int    `form:"num_of_fragments"`
+	Size              int    `form:"size"`
+	Language          string `form:"lang"`
 }
 
 type Response struct {
@@ -54,7 +55,7 @@ type Response struct {
 	Tags        []string `json:"tags"`
 	Description string   `json:"description"`
 	Path        string   `json:"path"`
-	Text        []string   `json:"text"`
+	Text        []string `json:"text"`
 }
 
 func HandleSearchContent(c *gin.Context) {
@@ -77,20 +78,23 @@ func HandleSearchContent(c *gin.Context) {
 	if cs.Size < 18 {
 		cs.Size = 25
 	}
+	if cs.NumberOfFragments < 1 {
+		cs.NumberOfFragments = 3
+	}
 	log.Println(cs.Query)
-	elasticResult := elastic.ContentSearch(index, cs.Query, cs.Size)
+	elasticResult := elastic.ContentSearch(index, cs.Query, cs.NumberOfFragments, cs.Size)
 	var response []Response
-	for _ , result := range elasticResult {
-		 r := Response{
-			MongoId:     result.MongoID,
-			Text:        result.Text,
+	for _, result := range elasticResult {
+		r := Response{
+			MongoId: result.MongoID,
+			Text:    result.Text,
 		}
 		objectId, err := primitive.ObjectIDFromHex(result.MongoID)
-		if err != nil{
+		if err != nil {
 			log.Println(err)
 		}
 		book, err := database.GetBookByID(objectId)
-		if err != nil{
+		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{
 				"detail": fmt.Sprintf("can't find book by id %s", result.MongoID),
 			})

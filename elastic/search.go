@@ -40,11 +40,11 @@ type SearchItem struct {
 }
 
 type OutputSearchResult struct {
-	MongoID string `json:"mongo_id"`
+	MongoID string   `json:"mongo_id"`
 	Text    []string `json:"text"`
 }
 
-func ContentSearch(index string, searchString string, fragmentSize int) (output []*OutputSearchResult) {
+func ContentSearch(index string, searchString string, numberOfFragments int, fragmentSize int) (output []*OutputSearchResult) {
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -64,8 +64,10 @@ func ContentSearch(index string, searchString string, fragmentSize int) (output 
 		},
 		"highlight": map[string]interface{}{
 			"order":               "score",
-			"number_of_fragments": 1,
+			"number_of_fragments": numberOfFragments,
 			"fragment_size":       fragmentSize,
+			"pre_tags": "<b>",
+			"post_tags": "</b>",
 			"fields": map[string]interface{}{
 				"attachment.content": map[string]interface{}{},
 			},
@@ -111,7 +113,7 @@ func ContentSearch(index string, searchString string, fragmentSize int) (output 
 		for _, hit := range r.Hits.Hits {
 			output = append(output, &OutputSearchResult{
 				MongoID: hit.Source.MongoId,
-				Text: hit.Highlight.AttachmentContent,
+				Text:    hit.Highlight.AttachmentContent,
 			})
 		}
 	}
