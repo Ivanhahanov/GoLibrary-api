@@ -37,7 +37,7 @@ func InitConnection(cfg *config.Config){
 }
 
 // GetConnection Retrieves a client to the MongoDB
-func getConnection() (*mongo.Client, context.Context, context.CancelFunc) {
+func GetConnection() (*mongo.Client, context.Context, context.CancelFunc) {
 	username := mongoCfg.Username
 	password := mongoCfg.Password
 	clusterEndpoint := mongoCfg.Enrypoint
@@ -70,7 +70,7 @@ func getConnection() (*mongo.Client, context.Context, context.CancelFunc) {
 func GetAllBooks() ([]*models.Book, error) {
 	var books []*models.Book
 
-	client, ctx, cancel := getConnection()
+	client, ctx, cancel := GetConnection()
 	defer cancel()
 	defer client.Disconnect(ctx)
 	db := client.Database("books")
@@ -92,7 +92,7 @@ func GetAllBooks() ([]*models.Book, error) {
 func GetBookByID(id primitive.ObjectID) (*models.Book, error) {
 	var task *models.Book
 
-	client, ctx, cancel := getConnection()
+	client, ctx, cancel := GetConnection()
 	defer cancel()
 	defer client.Disconnect(ctx)
 	db := client.Database("books")
@@ -113,7 +113,7 @@ func GetBookByID(id primitive.ObjectID) (*models.Book, error) {
 
 //Create creating a task in a mongo
 func Create(task *models.Book) (primitive.ObjectID, error) {
-	client, ctx, cancel := getConnection()
+	client, ctx, cancel := GetConnection()
 	defer cancel()
 	defer client.Disconnect(ctx)
 	task.ID = primitive.NewObjectID()
@@ -130,7 +130,7 @@ func Create(task *models.Book) (primitive.ObjectID, error) {
 //Update updating an existing task in a mongo
 func Update(task *models.Book) (*models.Book, error) {
 	var updatedBook *models.Book
-	client, ctx, cancel := getConnection()
+	client, ctx, cancel := GetConnection()
 	defer cancel()
 	defer client.Disconnect(ctx)
 
@@ -154,7 +154,7 @@ func Update(task *models.Book) (*models.Book, error) {
 }
 
 func OneDelete(bookId string)  (string, error){
-	client, ctx, cancel := getConnection()
+	client, ctx, cancel := GetConnection()
 	defer cancel()
 	defer client.Disconnect(ctx)
 	objectId, _ := primitive.ObjectIDFromHex(bookId)

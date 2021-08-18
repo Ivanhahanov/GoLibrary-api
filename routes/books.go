@@ -7,6 +7,7 @@ import (
 	"github.com/Ivanhahanov/GoLibrary/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/gosimple/slug"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -78,6 +79,7 @@ func HandleUploadBook(c *gin.Context) {
 	book.Path = newFilePath
 	book.Publisher = publisher
 	book.Description = description
+	book.Slug = slug.Make(title)
 	_, err = database.Create(&book)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": book.Tags})
@@ -107,7 +109,7 @@ func HandleUpdateBook(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"book": savedBook})
 }
 
-func HandleDeleteBook(c *gin.Context)  {
+func HandleDeleteBook(c *gin.Context) {
 	bookId := c.Param("id")
 	fmt.Println(bookId)
 	_, err := database.OneDelete(bookId)

@@ -15,7 +15,7 @@ type MongoSearch struct {
 }
 
 func Search(request *MongoSearch) (books []*models.Book) {
-	client, ctx, cancel := getConnection()
+	client, ctx, cancel := GetConnection()
 	defer cancel()
 	defer client.Disconnect(ctx)
 	db := client.Database("books")
