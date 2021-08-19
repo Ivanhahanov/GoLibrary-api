@@ -24,12 +24,8 @@ func HandleGetBooks(c *gin.Context) {
 }
 
 func HandleGetBook(c *gin.Context) {
-	var book models.Book
-	if err := c.BindUri(&book); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
-		return
-	}
-	var loadedBook, err = database.GetBookByID(book.ID)
+	bookId := c.Param("id")
+	var loadedBook, err = database.GetBookByID(bookId)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"msg": err})
 		return
@@ -119,4 +115,14 @@ func HandleDeleteBook(c *gin.Context) {
 	}
 	elastic.Delete(bookId)
 	c.JSON(http.StatusOK, gin.H{"book": bookId})
+}
+
+func HandleDownload(c *gin.Context) {
+	bookId := c.Param("id")
+	var loadedBook, err = database.GetBookByID(bookId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"msg": err})
+		return
+	}
+	c.FileAttachment(loadedBook.Path, loadedBook.Slug+".pdf")
 }

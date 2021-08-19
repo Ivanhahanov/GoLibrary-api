@@ -89,7 +89,7 @@ func GetAllBooks() ([]*models.Book, error) {
 }
 
 // GetBookByID Retrives a task by its id from the db
-func GetBookByID(id primitive.ObjectID) (*models.Book, error) {
+func GetBookByID(id string) (*models.Book, error) {
 	var task *models.Book
 
 	client, ctx, cancel := GetConnection()
@@ -97,7 +97,8 @@ func GetBookByID(id primitive.ObjectID) (*models.Book, error) {
 	defer client.Disconnect(ctx)
 	db := client.Database("books")
 	collection := db.Collection("books")
-	result := collection.FindOne(ctx, bson.M{"_id": id})
+	oblectId, _ := primitive.ObjectIDFromHex(id)
+	result := collection.FindOne(ctx, bson.M{"_id": oblectId})
 	if result == nil {
 		return nil, errors.New("Could not find a Book")
 	}

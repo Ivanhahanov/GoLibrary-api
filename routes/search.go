@@ -5,7 +5,6 @@ import (
 	"github.com/Ivanhahanov/GoLibrary/database"
 	"github.com/Ivanhahanov/GoLibrary/elastic"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
 )
@@ -89,11 +88,8 @@ func HandleSearchContent(c *gin.Context) {
 			MongoId: result.MongoID,
 			Text:    result.Text,
 		}
-		objectId, err := primitive.ObjectIDFromHex(result.MongoID)
-		if err != nil {
-			log.Println(err)
-		}
-		book, err := database.GetBookByID(objectId)
+
+		book, err := database.GetBookByID(result.MongoID)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{
 				"detail": fmt.Sprintf("can't find book by id %s", result.MongoID),
