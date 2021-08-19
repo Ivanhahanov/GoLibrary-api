@@ -21,7 +21,6 @@ func InitConnection(baseCfg *config.Config) {
 		Addresses: []string{
 			baseCfg.Elastic.Address,
 		},
-		// TODO: remove plain creds
 		Username: baseCfg.Elastic.Username,
 		Password: baseCfg.Elastic.Password,
 		Transport: &http.Transport{

@@ -1,9 +1,0 @@
-database:
-  address: mongodb:27017
-  username: root
-  password: changeme
-
-elastic:
-  address: https://odfe-node1:9200
-  username: admin
-  password: admin

@@ -5,10 +5,12 @@ import (
 	"github.com/Ivanhahanov/GoLibrary/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/gosimple/slug"
 	"log"
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
+	"time"
 )
 
 func HandleGetBooks(c *gin.Context) {
@@ -16,7 +18,6 @@ func HandleGetBooks(c *gin.Context) {
 }
 
 func HandleGetBook(c *gin.Context) {
-
 }
 
 type FileJson struct {
@@ -35,11 +36,11 @@ func HandleUploadBook(c *gin.Context) {
 		})
 		return
 	}
-	title := c.Request.PostFormValue("title")
-	author := c.Request.PostFormValue("author")
-	publisher := c.Request.PostFormValue("publisher")
-	description := c.Request.PostFormValue("description")
-
+	title := c.PostForm("title")
+	author := c.PostForm("author")
+	publisher := c.PostForm("publisher")
+	description := c.PostForm("description")
+	// year := c.PostForm("year")
 	// Retrieve file information
 	extension := filepath.Ext(file.Filename)
 	// Generate random file name for the new uploaded file so it doesn't override the old file with same name
@@ -60,9 +61,11 @@ func HandleUploadBook(c *gin.Context) {
 	book.Path = newFilePath
 	book.Publisher = publisher
 	book.Description = description
+	book.Slug = slug.Make(title)
+	book.Year = "2021"
+	book.CreationDate = time.Now().Format(time.RFC3339)
 
-	elastic.Put(newFilePath)
-
+	elastic.Put(&book)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Your file has been successfully uploaded.",
 	})
@@ -77,6 +80,13 @@ func HandleUpdateBook(c *gin.Context) {
 	}
 }
 
-func HandleDeleteBook(c *gin.Context)  {
+func HandleDeleteBook(c *gin.Context) {
+	bookId := c.Param("id")
+	elastic.Delete(bookId)
+	c.JSON(http.StatusOK, gin.H{"book": bookId})
+}
 
+func HandleDownload(c *gin.Context) {
+	//bookId := c.Param("id")
+	//c.FileAttachment(loadedBook.Path, loadedBook.Slug+".pdf")
 }

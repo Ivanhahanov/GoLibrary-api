@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func Delete() {
+func Delete(id string) {
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -17,7 +17,7 @@ func Delete() {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"match": map[string]interface{}{
-
+				"_id": id,
 			},
 		},
 	}
@@ -25,7 +25,7 @@ func Delete() {
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {
 		log.Fatalf("Error encoding query: %s", err)
 	}
-	res, err := es.DeleteByQuery([]string{"books_ru"}, strings.NewReader(buf.String()))
+	res, err := es.DeleteByQuery([]string{"books_*"}, strings.NewReader(buf.String()))
 	if err != nil {
 		log.Fatalf("Error deleting the document: %s", err)
 	}

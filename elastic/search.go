@@ -40,9 +40,16 @@ type SearchItem struct {
 			ContentLength int    `json:"content_length"`
 		} `json:"attachment"`
 	} `json:"_source"`
+	Highlight struct {
+		AttachmentContent []string `json:"attachment.content"`
+	} `json:"highlight"`
 }
 
-func ContentSearch(index string, searchString string) {
+type OutputSearchResult struct {
+	Text    []string `json:"text"`
+}
+
+func ContentSearch(index string, searchString string, numberOfFragments int, fragmentSize int) (output []*OutputSearchResult) {
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -51,12 +58,27 @@ func ContentSearch(index string, searchString string) {
 	var buf bytes.Buffer
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
-			"query_string": map[string]interface{}{
-				"default_field": "attachment.content",
-				"query":         searchString,
+			"simple_query_string": map[string]interface{}{
+				"query":            searchString,
+				"fields":           []string{"attachment.content"},
+				"default_operator": "and",
 			},
 		},
+		"_source": map[string]interface{}{
+		},
+		"highlight": map[string]interface{}{
+			"order":               "score",
+			"number_of_fragments": numberOfFragments,
+			"fragment_size":       fragmentSize,
+			"pre_tags": "<b>",
+			"post_tags": "</b>",
+			"fields": map[string]interface{}{
+				"attachment.content": map[string]interface{}{},
+			},
+			"type": "fvh",
+		},
 	}
+	log.Println(query)
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {
 		log.Fatalf("Error encoding query: %s", err)
 	}
@@ -88,6 +110,10 @@ func ContentSearch(index string, searchString string) {
 	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
+	log.Println(r)
+
+	if r.Hits.Total.Value > 0 {
+
 
 	// Print the response status, number of results, and request duration.
 	log.Printf(
@@ -97,4 +123,11 @@ func ContentSearch(index string, searchString string) {
 		int(r.Took),
 	)
 	// Print the ID and document source for each hit.
+		for _, hit := range r.Hits.Hits {
+			output = append(output, &OutputSearchResult{
+				Text:    hit.Highlight.AttachmentContent,
+			})
+		}
+	}
+	return
 }

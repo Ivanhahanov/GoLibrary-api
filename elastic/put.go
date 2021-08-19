@@ -5,34 +5,31 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/Ivanhahanov/GoLibrary/models"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/elastic/go-elasticsearch/v8/esutil"
+	"github.com/gosimple/slug"
 	"log"
 )
 
-type Book struct {
 
-}
-
-func Put(filepath string) {
+func Put(book *models.Book) {
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
 	}
-	content, err := docconv.ConvertPath(filepath)
+	content, err := docconv.ConvertPath(book.Path)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	str := base64.StdEncoding.EncodeToString([]byte(content.Body))
 
-	book := Book{
-		Data:    str,
-	}
-
+	book.Data = str
 	req := esapi.IndexRequest{
 		Index:    "books_ru",
+		DocumentID: slug.Make(book.Title),
 		Body:     esutil.NewJSONReader(&book),
 		Pipeline: "attachment",
 	}
