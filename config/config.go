@@ -12,11 +12,6 @@ type Config struct {
 		Username string `yaml:"username"`
 		Password string `yaml:"password"`
 	} `yaml:"elastic"`
-	Database struct {
-		Address string `yaml:"address"`
-		Username string `yaml:"username"`
-		Password string `yaml:"password"`
-	} `yaml:"database"`
 }
 
 func processError(err error) {

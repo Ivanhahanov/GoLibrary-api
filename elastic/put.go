@@ -12,11 +12,10 @@ import (
 )
 
 type Book struct {
-	MongoId string `json:"mongo_id"`
-	Data    string `json:"data"`
+
 }
 
-func Put(filepath string, mongoId string) {
+func Put(filepath string) {
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -29,7 +28,6 @@ func Put(filepath string, mongoId string) {
 	str := base64.StdEncoding.EncodeToString([]byte(content.Body))
 
 	book := Book{
-		MongoId: mongoId,
 		Data:    str,
 	}
 

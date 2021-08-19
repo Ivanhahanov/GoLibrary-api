@@ -59,7 +59,7 @@ func PipelineInit() {
 	}
 	log.Println(res)
 }
-func IndexInit() {
+func IndexInit(index_name string, analyzer string) {
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -70,7 +70,7 @@ func IndexInit() {
 			"properties": map[string]interface{}{
 				"attachment.content": map[string]interface{}{
 					"type":        "text",
-					"analyzer":    "russian",
+					"analyzer":    analyzer,
 					"term_vector": "with_positions_offsets",
 				},
 			},
@@ -87,7 +87,7 @@ func IndexInit() {
 		log.Fatalf("Error encoding query: %s", err)
 	}
 	req:= esapi.IndicesCreateRequest{
-		Index: "books",
+		Index: index_name,
 		Body: esutil.NewJSONReader(&query),
 	}
 	res, err := req.Do(context.Background(), es)

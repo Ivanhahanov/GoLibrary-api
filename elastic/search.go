@@ -33,7 +33,6 @@ type SearchItem struct {
 	Score  float64 `json:"_score"`
 	Source struct {
 		Data       string `json:"data"`
-		MongoId    string `json:"mongo_id"`
 		Attachment struct {
 			ContentType   string `json:"content_type"`
 			Language      string `json:"language"`
@@ -98,7 +97,4 @@ func ContentSearch(index string, searchString string) {
 		int(r.Took),
 	)
 	// Print the ID and document source for each hit.
-	for _, hit := range r.Hits.Hits {
-		log.Println(hit.Source.MongoId)
-	}
 }

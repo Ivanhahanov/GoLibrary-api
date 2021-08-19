@@ -6,7 +6,6 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o /main .
 
 FROM alpine
 RUN apk add poppler-utils
-ENV MONGODB_USERNAME=MONGODB_USERNAME MONGODB_PASSWORD=MONGODB_PASSWORD MONGODB_ENDPOINT=MONGODB_ENDPOINT
 COPY --from=builder /main ./
 COPY --from=builder /app/config.yml ./
 ENTRYPOINT ["./main"]

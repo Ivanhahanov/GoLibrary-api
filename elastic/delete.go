@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func Delete(mongoId string) {
+func Delete() {
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -17,7 +17,7 @@ func Delete(mongoId string) {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"match": map[string]interface{}{
-				"mongo_id": mongoId,
+
 			},
 		},
 	}

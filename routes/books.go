@@ -1,8 +1,6 @@
 package routes
 
 import (
-	"fmt"
-	"github.com/Ivanhahanov/GoLibrary/database"
 	"github.com/Ivanhahanov/GoLibrary/elastic"
 	"github.com/Ivanhahanov/GoLibrary/models"
 	"github.com/gin-gonic/gin"
@@ -14,27 +12,11 @@ import (
 )
 
 func HandleGetBooks(c *gin.Context) {
-	var loadedBooks, err = database.GetAllBooks()
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"msg": err})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"books": loadedBooks})
+
 }
 
 func HandleGetBook(c *gin.Context) {
-	var book models.Book
-	if err := c.BindUri(&book); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
-		return
-	}
-	var loadedBook, err = database.GetBookByID(book.ID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"msg": err})
-		return
-	}
-	// TODO: return file by loadedBook.Path
-	c.JSON(http.StatusOK, gin.H{"ID": loadedBook.ID, "Path": loadedBook.Path})
+
 }
 
 type FileJson struct {
@@ -78,13 +60,8 @@ func HandleUploadBook(c *gin.Context) {
 	book.Path = newFilePath
 	book.Publisher = publisher
 	book.Description = description
-	_, err = database.Create(&book)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": book.Tags})
-		return
-	}
 
-	elastic.Put(newFilePath, book.ID.Hex())
+	elastic.Put(newFilePath)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Your file has been successfully uploaded.",
@@ -98,23 +75,8 @@ func HandleUpdateBook(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
 		return
 	}
-	// TODO: check if book exists
-	savedBook, err := database.Update(&book)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": err})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"book": savedBook})
 }
 
 func HandleDeleteBook(c *gin.Context)  {
-	bookId := c.Param("id")
-	fmt.Println(bookId)
-	_, err := database.OneDelete(bookId)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": err})
-		return
-	}
-	elastic.Delete(bookId)
-	c.JSON(http.StatusOK, gin.H{"book": bookId})
+
 }

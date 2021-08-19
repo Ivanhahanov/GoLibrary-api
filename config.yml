@@ -1,9 +1,4 @@
-database:
-  address: 192.168.0.104:27017
-  username: root
-  password: changeme
-
 elastic:
-  address: https://192.168.0.104:9200
+  address: https://192.168.:9200
   username: admin
   password: admin
