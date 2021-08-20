@@ -8,7 +8,7 @@ import (
 )
 
 
-func ContentSearch(index string, searchString string, numberOfFragments int, fragmentSize int) (output []*SearchItem) {
+func ContentSearch(index string, searchString string, numberOfFragments int, fragmentSize int) (output []SearchItem) {
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -68,7 +68,7 @@ func ContentSearch(index string, searchString string, numberOfFragments int, fra
 		)
 		// Print the ID and document source for each hit.
 		for _, hit := range r.Hits.Hits {
-			output = append(output, &hit)
+			output = append(output, hit)
 		}
 	}
 	return

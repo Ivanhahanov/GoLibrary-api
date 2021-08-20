@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func GetById(documentId string) *Source {
+func GetById(documentId string) Source {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"match": map[string]interface{}{
@@ -22,10 +22,10 @@ func GetById(documentId string) *Source {
 	if len(searchResult) == 1{
 		return searchResult[0]
 	}
-	return nil
+	return Source{}
 }
 
-func GetAllInIndex(index string) []*Source {
+func GetAllInIndex(index string) []Source {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"match_all": map[string]interface{}{},
@@ -37,7 +37,7 @@ func GetAllInIndex(index string) []*Source {
 	return Search(query, index)
 }
 
-func Search(query map[string]interface{}, index string) (output []*Source) {
+func Search(query map[string]interface{}, index string) (output []Source) {
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -58,7 +58,6 @@ func Search(query map[string]interface{}, index string) (output []*Source) {
 	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
-
 	if r.Hits.Total.Value > 0 {
 		log.Printf(
 			"[%s] %d hits; took: %dms",
@@ -67,7 +66,7 @@ func Search(query map[string]interface{}, index string) (output []*Source) {
 			r.Took,
 		)
 		for _, hit := range r.Hits.Hits {
-			output = append(output, &hit.Source)
+			output = append(output, hit.Source)
 		}
 	}
 	return

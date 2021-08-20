@@ -20,7 +20,7 @@ func HandleGetBooks(c *gin.Context) {
 
 func HandleGetBook(c *gin.Context) {
 	bookId := c.Param("id")
-	var loadedBook= elastic.GetById(bookId)
+	var loadedBook = elastic.GetById(bookId)
 	// TODO: return file by loadedBook.Path
 	c.JSON(http.StatusOK, gin.H{"ID": loadedBook.Slug, "Path": loadedBook.Path})
 
