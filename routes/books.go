@@ -14,10 +14,16 @@ import (
 )
 
 func HandleGetBooks(c *gin.Context) {
-
+	var loadedBooks = elastic.GetAllInIndex("books_*")
+	c.JSON(http.StatusOK, gin.H{"books": loadedBooks})
 }
 
 func HandleGetBook(c *gin.Context) {
+	bookId := c.Param("id")
+	var loadedBook= elastic.GetById(bookId)
+	// TODO: return file by loadedBook.Path
+	c.JSON(http.StatusOK, gin.H{"ID": loadedBook.Slug, "Path": loadedBook.Path})
+
 }
 
 type FileJson struct {
@@ -87,6 +93,7 @@ func HandleDeleteBook(c *gin.Context) {
 }
 
 func HandleDownload(c *gin.Context) {
-	//bookId := c.Param("id")
-	//c.FileAttachment(loadedBook.Path, loadedBook.Slug+".pdf")
+	bookId := c.Param("id")
+	loadedBook := elastic.GetById(bookId)
+	c.FileAttachment(loadedBook.Path, loadedBook.Slug+".pdf")
 }

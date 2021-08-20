@@ -1,10 +1,8 @@
 package shortlinks
 
 import (
-	"errors"
-	"fmt"
-	"gopkg.in/mgo.v2/bson"
-	"log"
+	"context"
+	"github.com/go-redis/redis/v8"
 )
 
 type Shorter struct {
@@ -13,107 +11,66 @@ type Shorter struct {
 	VisitCount   int    `json:"visit_count"`
 }
 
+var ctx = context.Background()
+var linkDB = redis.Client{}
+var countDB = redis.Client{}
+
+
+func InitRedisConnection() {
+	linkDB = *redis.NewClient(&redis.Options{
+		Addr:     "redis:6379",
+		Password: "sOmE_sEcUrE_pAsS", // no password set
+		DB:       0,  // use default DB
+	})
+	countDB = *redis.NewClient(&redis.Options{
+		Addr:     "redis:6379",
+		Password: "sOmE_sEcUrE_pAsS", // no password set
+		DB:       1,  // use default DB
+	})
+
+}
+
 func CreateShortLink(originalLink string) (string, error) {
 	shortLink := GenerateShorLink(4)
-	for {
-
-		if checkShortLinkExists(shortLink) {
-			break
-		}
-		shortLink = GenerateShorLink(4)
-	}
-	shorter := Shorter{
-		OriginalName: originalLink,
-		ShortName:  shortLink,
-		VisitCount: 0,
-	}
-	client, ctx, cancel := database.GetConnection()
-	defer cancel()
-	defer client.Disconnect(ctx)
-	db := client.Database("shorter")
-	collection := db.Collection("shorter")
-	_, err := collection.InsertOne(ctx, shorter)
+	err := linkDB.Set(ctx, shortLink, originalLink, 0).Err()
 	if err != nil {
-		log.Printf("Could not create Book: %v", err)
 		return "", err
 	}
-	return shorter.ShortName, nil
-}
-
-func checkShortLinkExists(shortLink string) bool {
-	client, ctx, cancel := database.GetConnection()
-	defer cancel()
-	defer client.Disconnect(ctx)
-	db := client.Database("shorter")
-	collection := db.Collection("shorter")
-	result := collection.FindOne(ctx, bson.M{"shortname": shortLink})
-	if result == nil {
-		return false
-	}
-	return true
-}
-
-func getDocumentByShortLink(shortLink string) (*Shorter, error) {
-	client, ctx, cancel := database.GetConnection()
-	defer cancel()
-	defer client.Disconnect(ctx)
-	db := client.Database("shorter")
-	collection := db.Collection("shorter")
-	result := collection.FindOne(ctx, bson.M{"shortname": shortLink})
-	if result == nil {
-		return nil, errors.New(fmt.Sprintf("could not find a Record for %s", shortLink))
-	}
-
-	var shorter *Shorter
-	err := result.Decode(&shorter)
+	err = countDB.Set(ctx, shortLink, 0, 0).Err()
 	if err != nil {
-		log.Printf("Failed marshalling %v", err)
-		return nil, err
+		return "", err
 	}
-	return shorter, nil
+	return shortLink, nil
 }
 
 func GetOriginalLink(shortLink string) (originalLink string, err error) {
-	doc, err := getDocumentByShortLink(shortLink)
+	originalLink, err = linkDB.Get(ctx, shortLink).Result()
 	if err != nil {
 		return "", err
 	}
-	return doc.OriginalName, nil
+	return originalLink, nil
 }
 
 func GetAllDocuments() ([]*Shorter, error) {
-	client, ctx, cancel := database.GetConnection()
-	defer cancel()
-	defer client.Disconnect(ctx)
-	db := client.Database("shorter")
-	collection := db.Collection("shorter")
-	cursor, err := collection.Find(ctx, bson.D{})
-	if err != nil {
+
+	var shorters []*Shorter
+	keys, err := linkDB.Keys(ctx, "*").Result()
+	if err != nil{
 		return nil, err
 	}
-	defer cursor.Close(ctx)
-	var shorters []*Shorter
-	err = cursor.All(ctx, &shorters)
-	if err != nil {
-		log.Printf("Failed marshalling %v", err)
-		return nil, err
+	for _, key := range keys{
+		orig, _ := linkDB.Get(ctx, key).Result()
+		count, _ := countDB.Get(ctx, key).Int()
+		shorters = append(shorters, &Shorter{
+			ShortName: key,
+			OriginalName: orig,
+			VisitCount: count,
+		})
 	}
 	return shorters, nil
 }
 
 func WriteVisit(shortLink string) error {
-	client, ctx, cancel := database.GetConnection()
-	defer cancel()
-	defer client.Disconnect(ctx)
-	db := client.Database("shorter")
-	collection := db.Collection("shorter")
-	_, err := collection.UpdateOne(ctx,
-		bson.M{"shortname": shortLink}, bson.D{
-			{"$inc", bson.M{"visitcount": 1}},
-		}, options.Update().SetUpsert(true))
-	if err != nil {
-		log.Printf("Failed marshalling %v", err)
-		return err
-	}
+	countDB.Incr(ctx, shortLink)
 	return nil
 }

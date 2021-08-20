@@ -7,49 +7,8 @@ import (
 	"log"
 )
 
-type SearchResult struct {
-	Took     int  `json:"took"`
-	TimedOut bool `json:"timed_out"`
-	Shards   struct {
-		Total      int `json:"total"`
-		Successful int `json:"successful"`
-		Skipped    int `json:"skipped"`
-		Failed     int `json:"failed"`
-	} `json:"_shards"`
-	Hits struct {
-		Total struct {
-			Value    int    `json:"value"`
-			Relation string `json:"relation"`
-		} `json:"total"`
-		MaxScore float64      `json:"max_score"`
-		Hits     []SearchItem `json:"hits"`
-	} `json:"hits"`
-}
 
-type SearchItem struct {
-	Index  string  `json:"_index"`
-	Type   string  `json:"_type"`
-	ID     string  `json:"_id"`
-	Score  float64 `json:"_score"`
-	Source struct {
-		Data       string `json:"data"`
-		Attachment struct {
-			ContentType   string `json:"content_type"`
-			Language      string `json:"language"`
-			Content       string `json:"content"`
-			ContentLength int    `json:"content_length"`
-		} `json:"attachment"`
-	} `json:"_source"`
-	Highlight struct {
-		AttachmentContent []string `json:"attachment.content"`
-	} `json:"highlight"`
-}
-
-type OutputSearchResult struct {
-	Text    []string `json:"text"`
-}
-
-func ContentSearch(index string, searchString string, numberOfFragments int, fragmentSize int) (output []*OutputSearchResult) {
+func ContentSearch(index string, searchString string, numberOfFragments int, fragmentSize int) (output []*SearchItem) {
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -65,20 +24,20 @@ func ContentSearch(index string, searchString string, numberOfFragments int, fra
 			},
 		},
 		"_source": map[string]interface{}{
+			"excludes": []string{"data", "attachment.content"},
 		},
 		"highlight": map[string]interface{}{
 			"order":               "score",
 			"number_of_fragments": numberOfFragments,
 			"fragment_size":       fragmentSize,
-			"pre_tags": "<b>",
-			"post_tags": "</b>",
+			"pre_tags":            "<b>",
+			"post_tags":           "</b>",
 			"fields": map[string]interface{}{
 				"attachment.content": map[string]interface{}{},
 			},
 			"type": "fvh",
 		},
 	}
-	log.Println(query)
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {
 		log.Fatalf("Error encoding query: %s", err)
 	}
@@ -91,42 +50,25 @@ func ContentSearch(index string, searchString string, numberOfFragments int, fra
 		log.Fatalf("Error getting response: %s", err)
 	}
 	defer res.Body.Close()
-	if res.IsError() {
-		var e map[string]interface{}
-		if err := json.NewDecoder(res.Body).Decode(&e); err != nil {
-			log.Fatalf("Error parsing the response body: %s", err)
-		} else {
-			// Print the response status and error information.
-			log.Fatalf("[%s] %s: %s",
-				res.Status(),
-				e["error"].(map[string]interface{})["type"],
-				e["error"].(map[string]interface{})["reason"],
-			)
-		}
-	}
 
 	var r SearchResult
 
 	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
-	log.Println(r)
 
 	if r.Hits.Total.Value > 0 {
 
-
-	// Print the response status, number of results, and request duration.
-	log.Printf(
-		"[%s] %d hits; took: %dms",
-		res.Status(),
-		int(r.Hits.Total.Value),
-		int(r.Took),
-	)
-	// Print the ID and document source for each hit.
+		// Print the response status, number of results, and request duration.
+		log.Printf(
+			"[%s] %d hits; took: %dms",
+			res.Status(),
+			int(r.Hits.Total.Value),
+			int(r.Took),
+		)
+		// Print the ID and document source for each hit.
 		for _, hit := range r.Hits.Hits {
-			output = append(output, &OutputSearchResult{
-				Text:    hit.Highlight.AttachmentContent,
-			})
+			output = append(output, &hit)
 		}
 	}
 	return
