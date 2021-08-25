@@ -4,6 +4,7 @@ import (
 	"github.com/Ivanhahanov/GoLibrary/config"
 	"github.com/Ivanhahanov/GoLibrary/elastic"
 	"github.com/Ivanhahanov/GoLibrary/routes"
+	"github.com/Ivanhahanov/GoLibrary/shortlinks"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -17,6 +18,7 @@ func main() {
 	cfg.LoadConfig("config.yml")
 	elastic.InitConnection(&cfg)
 	elastic.PipelineInit()
+	shortlinks.InitRedisConnection()
 	for k, v := range language {
 		elastic.IndexInit(k, v)
 	}
@@ -33,5 +35,5 @@ func main() {
 	r.POST("/link/create/", routes.HandleCreateShortLink)
 	r.GET("/link/", routes.HandleGetAllShortLinks)
 	r.GET("/download/:id", routes.HandleDownload)
-	r.Run(":80")
+	r.Run()
 }
