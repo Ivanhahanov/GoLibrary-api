@@ -29,7 +29,7 @@ func Put(book *models.Book) {
 	book.Data = str
 	req := esapi.IndexRequest{
 		Index:    "books_ru",
-		DocumentID: slug.Make(book.Title),
+		DocumentID: slug.Make(book.Title) + "_" + book.Year,
 		Body:     esutil.NewJSONReader(&book),
 		Pipeline: "attachment",
 	}

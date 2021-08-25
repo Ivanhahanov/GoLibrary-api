@@ -60,7 +60,7 @@ func ContentSearch(index string, searchString string, numberOfFragments int, fra
 		"query": map[string]interface{}{
 			"simple_query_string": map[string]interface{}{
 				"query":            searchString,
-				"fields":           []string{"attachment.content"},
+				"fields":           []string{"attachment.content", "title^2"},
 				"default_operator": "and",
 			},
 		},

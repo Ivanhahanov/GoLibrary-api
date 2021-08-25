@@ -10,5 +10,6 @@ require (
 	github.com/gin-gonic/gin v1.7.3
 	github.com/google/uuid v1.3.0
 	github.com/gosimple/slug v1.10.0
+	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 )
