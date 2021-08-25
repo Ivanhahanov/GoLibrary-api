@@ -28,14 +28,14 @@ func ContentSearch(index string, searchString string, numberOfFragments int, fra
 		},
 		"highlight": map[string]interface{}{
 			"order":               "score",
-			"number_of_fragments": numberOfFragments,
-			"fragment_size":       fragmentSize,
 			"pre_tags":            "<b>",
 			"post_tags":           "</b>",
 			"fields": map[string]interface{}{
 				"attachment.content": map[string]interface{}{},
+				"number_of_fragments": numberOfFragments,
+				"fragment_size":       fragmentSize,
 			},
-			"type": "fvh",
+
 		},
 	}
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {
