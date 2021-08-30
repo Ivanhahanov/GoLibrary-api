@@ -1,7 +1,7 @@
 package elastic
 
 import (
-	"code.sajari.com/docconv"
+	"bufio"
 	"context"
 	"encoding/base64"
 	"fmt"
@@ -10,7 +10,9 @@ import (
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/elastic/go-elasticsearch/v8/esutil"
 	"github.com/gosimple/slug"
+	"io/ioutil"
 	"log"
+	"os"
 )
 
 
@@ -19,12 +21,15 @@ func Put(book *models.Book) {
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
 	}
-	content, err := docconv.ConvertPath(book.Path)
-	if err != nil {
-		log.Fatal(err)
-	}
+	f, _ := os.Open(book.Path)
+	reader := bufio.NewReader(f)
+	content, _ := ioutil.ReadAll(reader)
 
-	str := base64.StdEncoding.EncodeToString([]byte(content.Body))
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+
+	str := base64.StdEncoding.EncodeToString(content)
 
 	book.Data = str
 	req := esapi.IndexRequest{
