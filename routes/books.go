@@ -67,8 +67,8 @@ func HandleUploadBook(c *gin.Context) {
 	book.Path = newFilePath
 	book.Publisher = publisher
 	book.Description = description
-	book.Slug = slug.Make(title)
 	book.Year = "2021"
+	book.Slug = slug.Make(book.Title) + "_" + book.Year
 	book.CreationDate = time.Now().Format(time.RFC3339)
 
 	elastic.Put(&book)
