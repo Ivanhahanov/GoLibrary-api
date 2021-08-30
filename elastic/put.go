@@ -9,10 +9,10 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/elastic/go-elasticsearch/v8/esutil"
-	"github.com/gosimple/slug"
 	"io/ioutil"
 	"log"
 	"os"
+	pdf "github.com/pdfcpu/pdfcpu/pkg/api"
 )
 
 
@@ -21,22 +21,43 @@ func Put(book *models.Book) {
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
 	}
-	f, _ := os.Open(book.Path)
-	reader := bufio.NewReader(f)
-	content, _ := ioutil.ReadAll(reader)
+	tmp, err := ioutil.TempDir("", book.Slug)
+	if err != nil {
+		os.Exit(1)
+	}
+
+
+	// Create single page PDFs for in.pdf in outDir using the default configuration.
+	pdf.SplitFile(book.Path, tmp, 1, nil)
+
+	files, err := ioutil.ReadDir(tmp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for pageNum, file := range files {
+		filePath := tmp + "/"+ file.Name()
+		fmt.Println(filePath)
+		f, _ := os.Open(filePath)
+		content, _ := ioutil.ReadAll(bufio.NewReader(f))
+		str := base64.StdEncoding.EncodeToString(content)
+		book.Data = append(book.Data, map[string]interface{}{
+			"data": str,
+			"page": pageNum,
+		})
+	}
+	//os.RemoveAll(tmp)
+
 
 	//if err != nil {
 	//	log.Fatal(err)
 	//}
 
-	str := base64.StdEncoding.EncodeToString(content)
-
-	book.Data = str
 	req := esapi.IndexRequest{
-		Index:    "books_ru",
-		DocumentID: slug.Make(book.Title) + "_" + book.Year,
+		Index:    "books_en",
+		DocumentID: book.Slug,
 		Body:     esutil.NewJSONReader(&book),
-		Pipeline: "attachment",
+		Pipeline: "multiple_attachment",
 	}
 	res, err := req.Do(context.Background(), es)
 	if err != nil{
