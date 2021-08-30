@@ -7,7 +7,6 @@ import (
 	"log"
 )
 
-
 func ContentSearch(index string, searchString string, numberOfFragments int, fragmentSize int) (output []SearchItem) {
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
@@ -17,25 +16,50 @@ func ContentSearch(index string, searchString string, numberOfFragments int, fra
 	var buf bytes.Buffer
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
-			"simple_query_string": map[string]interface{}{
-				"query":            searchString,
-				"fields":           []string{"attachment.content", "title^2"},
-				"default_operator": "and",
+			"bool": map[string]interface{}{
+				"must": map[string]interface{}{
+					"nested": map[string]interface{}{
+						"path": "attachments",
+						"query": map[string]interface{}{
+							"simple_query_string": map[string]interface{}{
+								"query": searchString,
+								"fields": []string{
+									"attachments.attachment.content",
+								},
+								"default_operator": "and",
+							},
+						},
+						"inner_hits": map[string]interface{}{
+							"size":    4,
+							"_source": false,
+							"highlight": map[string]interface{}{
+								"order":               "score",
+								"pre_tags":            "<b>",
+								"post_tags":           "</b>",
+								"number_of_fragments": 1,
+								"fragment_size":       25,
+								"fields": map[string]interface{}{
+									"attachments.attachment.content": map[string]interface{}{},
+								},
+							},
+						},
+					},
+				},
+				"should": map[string]interface{}{
+					"simple_query_string": map[string]interface{}{
+						"query": searchString,
+						"fields": []string{
+							"title", "description",
+						},
+						"default_operator": "and",
+					},
+				},
 			},
 		},
 		"_source": map[string]interface{}{
-			"excludes": []string{"data", "attachment.content"},
-		},
-		"highlight": map[string]interface{}{
-			"order":               "score",
-			"pre_tags":            "<b>",
-			"post_tags":           "</b>",
-			"fields": map[string]interface{}{
-				"attachment.content": map[string]interface{}{},
-				"number_of_fragments": numberOfFragments,
-				"fragment_size":       fragmentSize,
+			"excludes": []string{
+				"attachments",
 			},
-
 		},
 	}
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {

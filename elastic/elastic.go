@@ -86,9 +86,15 @@ func PipelineInit() {
 	var buf bytes.Buffer
 	query := map[string]interface{}{
 		"processors": []interface{}{map[string]interface{}{
-			"attachment": map[string]interface{}{
-				"field":         "data",
-				"indexed_chars": -1,
+			"foreach": map[string]interface{}{
+				"field": "attachments",
+				"processor": map[string]interface{}{
+					"attachment": map[string]interface{}{
+						"target_field":  "_ingest._value.attachment",
+						"field":         "_ingest._value.data",
+						"indexed_chars": -1,
+					},
+				},
 			},
 		},
 		},
@@ -98,7 +104,7 @@ func PipelineInit() {
 	}
 
 	req := esapi.IngestPutPipelineRequest{
-		PipelineID: "attachment",
+		PipelineID: "multiple_attachment",
 		Body:       esutil.NewJSONReader(&query),
 	}
 	res, err := req.Do(context.Background(), es)
@@ -116,10 +122,19 @@ func IndexInit(index_name string, analyzer string) {
 	query := map[string]interface{}{
 		"mappings": map[string]interface{}{
 			"properties": map[string]interface{}{
-				"attachment.content": map[string]interface{}{
-					"type":        "text",
-					"analyzer":    analyzer,
-					"term_vector": "with_positions_offsets",
+				"attachments": map[string]interface{}{
+					"type": "nested",
+					"properties": map[string]interface{}{
+						"attachment": map[string]interface{}{
+							"properties": map[string]interface{}{
+								"content": map[string]interface{}{
+									"type":        "text",
+									"analyzer":    analyzer,
+									"term_vector": "with_positions_offsets",
+								},
+							},
+						},
+					},
 				},
 			},
 		},
