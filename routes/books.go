@@ -42,6 +42,14 @@ func HandleUploadBook(c *gin.Context) {
 		})
 		return
 	}
+	language := c.PostForm("language")
+	index := "books_ru"
+	switch language {
+	case "en":
+		index = "books_en"
+	case "ru":
+		index = "books_ru"
+	}
 	title := c.PostForm("title")
 	author := c.PostForm("author")
 	publisher := c.PostForm("publisher")
@@ -71,7 +79,7 @@ func HandleUploadBook(c *gin.Context) {
 	book.Slug = slug.Make(book.Title) + "_" + book.Year
 	book.CreationDate = time.Now().Format(time.RFC3339)
 
-	elastic.Put(&book)
+	elastic.Put(&book, index)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Your file has been successfully uploaded.",
 	})

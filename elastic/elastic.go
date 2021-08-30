@@ -42,9 +42,30 @@ type SearchItem struct {
 	ID        string  `json:"_id"`
 	Score     float64 `json:"_score"`
 	Source    Source  `json:"_source"`
-	Highlight struct {
-		AttachmentContent []string `json:"attachment.content"`
-	} `json:"highlight"`
+	InnerHits    struct {
+		Attachments struct {
+			Hits struct {
+				Total struct {
+					Value    int    `json:"value"`
+					Relation string `json:"relation"`
+				} `json:"total"`
+				MaxScore float64 `json:"max_score"`
+				Hits     []struct {
+					Index  string `json:"_index"`
+					Type   string `json:"_type"`
+					ID     string `json:"_id"`
+					Nested struct {
+						Field  string `json:"field"`
+						Offset int    `json:"offset"`
+					} `json:"_nested"`
+					Score     float64 `json:"_score"`
+					Highlight struct {
+						AttachmentsAttachmentContent []string `json:"attachments.attachment.content"`
+					} `json:"highlight"`
+				} `json:"hits"`
+			} `json:"hits"`
+		} `json:"attachments"`
+	} `json:"inner_hits"`
 }
 
 type Source struct {
@@ -57,12 +78,6 @@ type Source struct {
 	Title        string      `json:"title"`
 	Slug         string      `json:"slug"`
 	Tags         interface{} `json:"tags"`
-
-	Attachment struct {
-		ContentType   string `json:"content_type"`
-		Language      string `json:"language"`
-		ContentLength int    `json:"content_length"`
-	} `json:"attachment"`
 }
 
 func InitConnection(baseCfg *config.Config) {

@@ -92,6 +92,7 @@ func ContentSearch(index string, searchString string, numberOfFragments int, fra
 		)
 		// Print the ID and document source for each hit.
 		for _, hit := range r.Hits.Hits {
+			// TODO: merge innerhits
 			output = append(output, hit)
 		}
 	}

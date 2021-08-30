@@ -18,15 +18,15 @@ type SearchParams struct {
 }
 
 type Response struct {
-	Year         string      `json:"year"`
-	Author       string      `json:"author"`
-	Description  string      `json:"description"`
-	Publisher    string      `json:"publisher"`
-	CreationDate time.Time   `json:"creation_date"`
-	Title        string      `json:"title"`
-	Slug         string      `json:"slug"`
-	Tags         interface{} `json:"tags"`
-	Text         []string    `json:"text"`
+	Year         string        `json:"year"`
+	Author       string        `json:"author"`
+	Description  string        `json:"description"`
+	Publisher    string        `json:"publisher"`
+	CreationDate time.Time     `json:"creation_date"`
+	Title        string        `json:"title"`
+	Slug         string        `json:"slug"`
+	Tags         interface{}   `json:"tags"`
+	Text         interface{} `json:"text"`
 }
 
 func HandleSearch(c *gin.Context) {
@@ -75,7 +75,7 @@ func HandleSearchContent(c *gin.Context) {
 			Title:        result.Source.Title,
 			Slug:         result.Source.Slug,
 			Tags:         result.Source.Tags,
-			Text:         result.Highlight.AttachmentContent,
+			Text:         result.InnerHits.Attachments.Hits.Hits,
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{

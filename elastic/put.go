@@ -16,7 +16,7 @@ import (
 )
 
 
-func Put(book *models.Book) {
+func Put(book *models.Book, index string) {
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -54,7 +54,7 @@ func Put(book *models.Book) {
 	//}
 
 	req := esapi.IndexRequest{
-		Index:    "books_en",
+		Index:    index,
 		DocumentID: book.Slug,
 		Body:     esutil.NewJSONReader(&book),
 		Pipeline: "multiple_attachment",
