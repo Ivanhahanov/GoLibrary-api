@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func ContentSearch(index string, searchString string, numberOfFragments int, fragmentSize int) (output []SearchItem) {
+func ContentSearch(index string, searchString string, size int, fragmentSize int) (output []SearchItem) {
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -30,14 +30,14 @@ func ContentSearch(index string, searchString string, numberOfFragments int, fra
 							},
 						},
 						"inner_hits": map[string]interface{}{
-							"size":    4,
+							"size":    size,
 							"_source": false,
 							"highlight": map[string]interface{}{
 								"order":               "score",
 								"pre_tags":            "<b>",
 								"post_tags":           "</b>",
 								"number_of_fragments": 1,
-								"fragment_size":       25,
+								"fragment_size":       fragmentSize,
 								"fields": map[string]interface{}{
 									"attachments.attachment.content": map[string]interface{}{},
 								},
@@ -93,6 +93,14 @@ func ContentSearch(index string, searchString string, numberOfFragments int, fra
 		// Print the ID and document source for each hit.
 		for _, hit := range r.Hits.Hits {
 			// TODO: merge innerhits
+			var text []interface{}
+			for _, inner := range hit.InnerHits.Attachments.Hits.Hits{
+				text = append(text, map[string]interface{} {
+					"page": inner.Nested.Offset,
+					"text": inner.Highlight.AttachmentsAttachmentContent,
+				})
+			}
+			hit.Source.Text = text
 			output = append(output, hit)
 		}
 	}

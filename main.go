@@ -35,5 +35,6 @@ func main() {
 	r.POST("/link/create/", routes.HandleCreateShortLink)
 	r.GET("/link/", routes.HandleGetAllShortLinks)
 	r.GET("/download/:id", routes.HandleDownload)
+	r.GET("/content/part/", routes.HandleGetPages)
 	r.Run()
 }

@@ -42,7 +42,7 @@ type SearchItem struct {
 	ID        string  `json:"_id"`
 	Score     float64 `json:"_score"`
 	Source    Source  `json:"_source"`
-	InnerHits    struct {
+	InnerHits struct {
 		Attachments struct {
 			Hits struct {
 				Total struct {
@@ -59,6 +59,7 @@ type SearchItem struct {
 						Offset int    `json:"offset"`
 					} `json:"_nested"`
 					Score     float64 `json:"_score"`
+					Source    PageSource  `json:"_source"`
 					Highlight struct {
 						AttachmentsAttachmentContent []string `json:"attachments.attachment.content"`
 					} `json:"highlight"`
@@ -69,15 +70,20 @@ type SearchItem struct {
 }
 
 type Source struct {
-	Path         string      `json:"path"`
-	Year         string      `json:"year"`
-	Author       string      `json:"author"`
-	Description  string      `json:"description"`
-	Publisher    string      `json:"publisher"`
-	CreationDate time.Time   `json:"creation_date"`
-	Title        string      `json:"title"`
-	Slug         string      `json:"slug"`
-	Tags         interface{} `json:"tags"`
+	Path         string        `json:"path"`
+	Year         string        `json:"year"`
+	Author       string        `json:"author"`
+	Description  string        `json:"description"`
+	Publisher    string        `json:"publisher"`
+	CreationDate time.Time     `json:"creation_date"`
+	Title        string        `json:"title"`
+	Slug         string        `json:"slug"`
+	Tags         interface{}   `json:"tags"`
+	Text         []interface{} `json:"text"`
+}
+type PageSource struct {
+	Data string `json:"data"`
+	Page int `json:"page"`
 }
 
 func InitConnection(baseCfg *config.Config) {
