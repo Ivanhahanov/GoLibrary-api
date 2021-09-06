@@ -151,7 +151,6 @@ func GetPages(index string, slug string, centralPage int) string {
 				if err != nil {
 					fmt.Println(err)
 				}
-				fmt.Println(len(file))
 				if _, err := tmpFile.Write(file); err != nil {
 					fmt.Println(err)
 				}
@@ -159,7 +158,6 @@ func GetPages(index string, slug string, centralPage int) string {
 				files = append(files, tmpFile.Name())
 			}
 		}
-		fmt.Println(files)
 		_ = pdf.MergeAppendFile(files, "/tmp/part.pdf", nil)
 		for _, path := range files{
 			os.Remove(path)

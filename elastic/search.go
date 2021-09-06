@@ -31,7 +31,11 @@ func ContentSearch(index string, searchString string, size int, fragmentSize int
 						},
 						"inner_hits": map[string]interface{}{
 							"size":    size,
-							"_source": false,
+							"_source": map[string]interface{}{
+								"includes": []string{
+									"attachments.page",
+								},
+							},
 							"highlight": map[string]interface{}{
 								"order":               "score",
 								"pre_tags":            "<b>",
@@ -96,7 +100,7 @@ func ContentSearch(index string, searchString string, size int, fragmentSize int
 			var text []interface{}
 			for _, inner := range hit.InnerHits.Attachments.Hits.Hits{
 				text = append(text, map[string]interface{} {
-					"page": inner.Nested.Offset,
+					"page": inner.Source.Page,
 					"text": inner.Highlight.AttachmentsAttachmentContent,
 				})
 			}

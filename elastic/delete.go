@@ -17,7 +17,7 @@ func Delete(id string) {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"match": map[string]interface{}{
-				"_id": id,
+				"slug": id,
 			},
 		},
 	}

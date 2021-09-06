@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -85,11 +86,33 @@ func HandleSearchContent(c *gin.Context) {
 
 }
 
+type GetPagesRequest struct {
+	Language string `form:"lang"`
+	Slug     string `form:"slug"`
+	Page     int    `form:"page"`
+}
+
 func HandleGetPages(c *gin.Context) {
-	pages := elastic.GetPages("books_en",
-		"python-dlia-setevykh-inzhenerov_2021",
-		431,
+	var pr GetPagesRequest
+	err := c.BindQuery(&pr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"detail": "Invalid request params",
+		})
+	}
+	index := "books_ru"
+	switch pr.Language {
+	case "en":
+		index = "books_en"
+	case "ru":
+		index = "books_ru"
+	}
+	pages := elastic.GetPages(
+		index,
+		pr.Slug,
+		pr.Page,
 	)
 	c.FileAttachment(pages,
 		strings.Split(pages, "/")[1])
+	os.Remove(pages)
 }

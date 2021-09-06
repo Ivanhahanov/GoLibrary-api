@@ -9,10 +9,12 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/elastic/go-elasticsearch/v8/esutil"
+	pdf "github.com/pdfcpu/pdfcpu/pkg/api"
 	"io/ioutil"
 	"log"
 	"os"
-	pdf "github.com/pdfcpu/pdfcpu/pkg/api"
+	"strconv"
+	"strings"
 )
 
 
@@ -35,15 +37,18 @@ func Put(book *models.Book, index string) {
 		log.Fatal(err)
 	}
 
-	for pageNum, file := range files {
+	for _, file := range files {
 		filePath := tmp + "/"+ file.Name()
 		fmt.Println(filePath)
+		splitedFilename := strings.Split(file.Name(), "_")
+		pageNum := strings.Split(splitedFilename[len(splitedFilename)-1], ".")[0]
 		f, _ := os.Open(filePath)
 		content, _ := ioutil.ReadAll(bufio.NewReader(f))
 		str := base64.StdEncoding.EncodeToString(content)
+		intPageNum, _ := strconv.Atoi(pageNum)
 		book.Data = append(book.Data, map[string]interface{}{
 			"data": str,
-			"page": pageNum,
+			"page": intPageNum,
 		})
 	}
 	//os.RemoveAll(tmp)
