@@ -168,3 +168,45 @@ func GetPages(index string, slug string, centralPage int) string {
 	}
 	return ""
 }
+
+func AutocompleteTitle(index string, text string) []string {
+	es, err := elasticsearch.NewClient(cfg)
+	if err != nil {
+		log.Fatalf("Error creating the client: %s", err)
+	}
+
+	query := map[string]interface{}{
+		"suggest": map[string]interface{}{
+			"autocomplete": map[string]interface{}{
+				"prefix": text,
+				"completion": map[string]interface{}{
+					"field": "title",
+				},
+			},
+		},
+		"_source": false,
+	}
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(query); err != nil {
+		log.Fatalf("Error encoding query: %s", err)
+	}
+	res, err := es.Search(es.Search.WithIndex(index),
+		es.Search.WithBody(&buf),
+		es.Search.WithPretty())
+	if err != nil {
+		log.Fatalf("Error deleting the document: %s", err)
+	}
+	defer res.Body.Close()
+
+	var r Autocomplete
+	var titles []string
+	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
+		log.Fatalf("Error parsing the response body: %s", err)
+	}
+	for _, opt := range r.Suggest.Autocomplete {
+		for _, text := range opt.Options {
+			titles = append(titles, text.Text)
+		}
+	}
+	return titles
+}

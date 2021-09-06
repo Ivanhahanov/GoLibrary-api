@@ -17,6 +17,31 @@ import (
 
 var cfg elasticsearch.Config
 
+type Autocomplete struct {
+	Took     int  `json:"took"`
+	TimedOut bool `json:"timed_out"`
+	Shards   struct {
+		Total      int `json:"total"`
+		Successful int `json:"successful"`
+		Skipped    int `json:"skipped"`
+		Failed     int `json:"failed"`
+	} `json:"_shards"`
+	Suggest struct {
+		Autocomplete []struct {
+			Text    string `json:"text"`
+			Offset  int    `json:"offset"`
+			Length  int    `json:"length"`
+			Options []struct {
+				Text  string  `json:"text"`
+				Index string  `json:"_index"`
+				Type  string  `json:"_type"`
+				ID    string  `json:"_id"`
+				Score float64 `json:"_score"`
+			} `json:"options"`
+		} `json:"autocomplete"`
+	} `json:"suggest"`
+}
+
 type SearchResult struct {
 	Took     int  `json:"took"`
 	TimedOut bool `json:"timed_out"`
@@ -143,6 +168,9 @@ func IndexInit(index_name string, analyzer string) {
 	query := map[string]interface{}{
 		"mappings": map[string]interface{}{
 			"properties": map[string]interface{}{
+				"title": map[string]interface{}{
+					"type": "completion",
+				},
 				"attachments": map[string]interface{}{
 					"type": "nested",
 					"properties": map[string]interface{}{
