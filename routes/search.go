@@ -31,7 +31,31 @@ type Response struct {
 	Text         interface{} `json:"text"`
 }
 
-func HandleSearch(c *gin.Context) {
+type AutocompleteRequest struct {
+	Query			string `form:"q"`
+	Language		string `form:"lang"`
+}
+
+func HandleAutocompleteTitle(c *gin.Context) {
+	var at AutocompleteRequest
+	err := c.BindQuery(&at)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"detail": "Invalid request params",
+		})
+	}
+	index := "books_ru"
+	switch at.Language {
+	case "en":
+		index = "books_en"
+	case "ru":
+		index = "books_ru"
+	}
+	response := elastic.AutocompleteTitle(index, at.Query)
+	c.JSON(http.StatusOK, gin.H{
+		"result": response,
+	})
 }
 
 type ContentSearch struct {
