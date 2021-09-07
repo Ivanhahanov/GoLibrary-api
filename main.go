@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Ivanhahanov/GoLibrary/config"
 	"github.com/Ivanhahanov/GoLibrary/elastic"
+	"github.com/Ivanhahanov/GoLibrary/middlewares"
 	"github.com/Ivanhahanov/GoLibrary/routes"
 	"github.com/Ivanhahanov/GoLibrary/shortlinks"
 	"github.com/gin-contrib/cors"
@@ -11,7 +12,7 @@ import (
 
 func main() {
 	var cfg config.Config
-	language := map[string]string {
+	language := map[string]string{
 		"books_ru": "russian",
 		"books_en": "english",
 	}
@@ -33,7 +34,7 @@ func main() {
 	r.GET("/content/search/", routes.HandleSearchContent)
 	r.GET("/:shortLink", routes.HandleShorter)
 	r.POST("/link/create/", routes.HandleCreateShortLink)
-	r.GET("/link/", routes.HandleGetAllShortLinks)
+	r.GET("/link/", middlewares.CheckGroup("dev"), routes.HandleGetAllShortLinks)
 	r.GET("/download/:id", routes.HandleDownload)
 	r.GET("/content/part/", routes.HandleGetPages)
 	r.Run(":80")
